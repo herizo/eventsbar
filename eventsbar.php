@@ -64,7 +64,7 @@ class EventsBar extends Module {
             if(Tools::isSubmit('events') && Tools::isSubmit('eventtitle')){
 
 
-                //Tools::getValue() is used to get save content of $_POST vars
+                //Tools::getValue() is used to get safe content of $_POST vars
                 //Tools::getValue($varname) replace $_POST['varname']
 
                 $events = Tools::getValue('events');
@@ -81,7 +81,7 @@ class EventsBar extends Module {
                     'enddate' => pSQL($enddate))
                 , 'INSERT');
 
-                /* autoexecute() is better than execute() . we can use pSQL() to have save datas
+                /* autoexecute() is better than execute() . we can use pSQL() to have safe datas
                     Db::getInstance()->execute('
                     INSERT INTO '._DB_PREFIX_.'eventsbar VALUES(null,"'.$title.'", "'.$events.'" ,"'.$startdate.'", "'.$enddate.'")
                     ');
