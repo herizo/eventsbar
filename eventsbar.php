@@ -20,7 +20,13 @@ class EventsBar extends Module {
     public function install(){
         //create the database table
         Db::getInstance()->execute('
-        CREATE TABLE '._DB_PREFIX_.'eventsbar (id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100), event TEXT, startdate DATE , enddate DATE)');
+        CREATE TABLE '._DB_PREFIX_.'eventsbar (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(100),
+                event TEXT,
+                startdate DATE ,
+                enddate DATE
+            )');
             //install and hook to displayTop directly
             return (parent::install() && $this->registerHook('Top'));
     }
