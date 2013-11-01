@@ -17,18 +17,27 @@ class EventsBar extends Module {
     }
 
 
-    public function install(){
+    public function install()
+    {
         //create the database table
-        Db::getInstance()->execute('
-        CREATE TABLE '._DB_PREFIX_.'eventsbar (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                title VARCHAR(100),
-                event TEXT,
-                startdate DATE ,
-                enddate DATE
-            )');
-            //install and hook to displayTop directly
-            return (parent::install() && $this->registerHook('Top'));
+        if(parent::install() && $this->registerHook('Top'))
+        {
+
+            Db::getInstance()->execute('
+            CREATE TABLE '._DB_PREFIX_.'eventsbar (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    title VARCHAR(100),
+                    event TEXT,
+                    startdate DATE ,
+                    enddate DATE
+                )');
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     //this is the part displayed in front office of website
@@ -37,13 +46,13 @@ class EventsBar extends Module {
         $events  = Db::getInstance()->executeS('
                 SELECT * FROM '._DB_PREFIX_.'eventsbar WHERE startdate <= NOW() AND enddate >=NOW()
             ');
-        
+
         //create a simple string from the array result of executeS()
         $eventstr = '';
         foreach ($events as $event){
-            $eventstr .= '<strong>'.$event['title'].'</strong>: '. $event['event']. ' | ';
+            $eventstr .= '<strong>'.$event['title'].'</strong>: <em>'. $event['event']. ' </em> <small> from '.$event['startdate'].' to '.$event['enddate'].'</small>    |   ';
         }
-        
+
         //create the smarty variable for the template file
         $smarty->assign('event', $eventstr);
         //loading the template file
@@ -53,9 +62,7 @@ class EventsBar extends Module {
 
     public function uninstall(){
         //delete the table before uninstall.
-        Db::getInstance()->execute('DROP TABLE '._DB_PREFIX_.'eventsbar');
-
-        return parent::uninstall();
+        return parent::uninstall() && Db::getInstance()->execute('DROP TABLE '._DB_PREFIX_.'eventsbar');
     }
 
     public function getContent(){
@@ -79,7 +86,7 @@ class EventsBar extends Module {
                 $enddate = Tools::getValue('enddate');
 
 
-                Db::getInstance()->autoExecute( _DB_PREFIX_.'eventsbar', array(
+                $result = Db::getInstance()->autoExecute( _DB_PREFIX_.'eventsbar', array(
                     'id'=> null,
                     'title'=> pSQL($title),
                     'event' => pSQL($events),
@@ -87,11 +94,10 @@ class EventsBar extends Module {
                     'enddate' => pSQL($enddate))
                 , 'INSERT');
 
-                /* autoexecute() is better than execute() . we can use pSQL() to have safe datas
-                    Db::getInstance()->execute('
-                    INSERT INTO '._DB_PREFIX_.'eventsbar VALUES(null,"'.$title.'", "'.$events.'" ,"'.$startdate.'", "'.$enddate.'")
-                    ');
-                */
+
+                if($result != true){
+                    throw new exception("Error this event was not correctly inserted");
+                }
             }
         }
 
@@ -101,7 +107,15 @@ class EventsBar extends Module {
         if(Tools::isSubmit('deleteevent')){
             //handle delete of an event 
                 $todelete = Tools::getValue('deleteevent');
-                Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'eventsbar WHERE id='.$todelete);
+                if(is_numeric($todelete))
+                {
+                    $todelete = pSQL((int)$todelete);
+                    $result= Db::getInstance()->executeS('SELECT COUNT(id) as count FROM '._DB_PREFIX_.'eventsbar WHERE id ='.$todelete);
+                    $count = $result[0]['count'];
+                    if($count == 1){
+                        Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'eventsbar WHERE id='.$todelete);
+                    }
+                }
         }
 
         //->executeS($sql) is same as execute($sql) but with array result return ..
