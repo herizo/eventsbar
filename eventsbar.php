@@ -76,15 +76,10 @@ class EventsBar extends Module {
         if(Tools::isSubmit('sendevent')){
             if(Tools::isSubmit('events') && Tools::isSubmit('eventtitle')){
 
-
-                //Tools::getValue() is used to get safe content of $_POST vars
-                //Tools::getValue($varname) replace $_POST['varname']
-
                 $events = Tools::getValue('events');
                 $title = Tools::getValue('eventtitle');
                 $startdate = Tools::getValue('startdate');
                 $enddate = Tools::getValue('enddate');
-
 
                 $result = Db::getInstance()->autoExecute( _DB_PREFIX_.'eventsbar', array(
                     'id'=> null,
@@ -93,7 +88,6 @@ class EventsBar extends Module {
                     'startdate' => pSQL($startdate),
                     'enddate' => pSQL($enddate))
                 , 'INSERT');
-
 
                 if($result != true){
                     throw new exception("Error this event was not correctly inserted");
@@ -118,7 +112,6 @@ class EventsBar extends Module {
                 }
         }
 
-        //->executeS($sql) is same as execute($sql) but with array result return ..
         $events  = Db::getInstance()->executeS('SELECT * FROM '._DB_PREFIX_.'eventsbar');
 
         $output ='';
