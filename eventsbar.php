@@ -2,9 +2,11 @@
 if (!defined('_PS_VERSION_'))
 	exit;
 
-class EventsBar extends Module {
+class EventsBar extends Module
+{
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->name = 'eventsbar';
         $this->tab = 'front_office_features';
         $this->version = 1.0;
@@ -19,7 +21,6 @@ class EventsBar extends Module {
 
     public function install()
     {
-        //create the database table
         if(parent::install() && $this->registerHook('Top'))
         {
 
@@ -41,31 +42,31 @@ class EventsBar extends Module {
     }
 
     //this is the part displayed in front office of website
-    public function hookTop($params){
+    public function hookTop($params)
+    {
         global $smarty;
         $events  = Db::getInstance()->executeS('
                 SELECT * FROM '._DB_PREFIX_.'eventsbar WHERE startdate <= NOW() AND enddate >=NOW()
             ');
 
-        //create a simple string from the array result of executeS()
         $eventstr = '';
-        foreach ($events as $event){
+        foreach ($events as $event)
+        {
             $eventstr .= '<strong>'.$event['title'].'</strong>: <em>'. $event['event']. ' </em> <small> from '.$event['startdate'].' to '.$event['enddate'].'</small>    |   ';
         }
 
-        //create the smarty variable for the template file
         $smarty->assign('event', $eventstr);
-        //loading the template file
         return $this->display(__FILE__, 'eventsbar.tpl');
     }
 
 
-    public function uninstall(){
-        //delete the table before uninstall.
+    public function uninstall()
+    {
         return parent::uninstall() && Db::getInstance()->execute('DROP TABLE '._DB_PREFIX_.'eventsbar');
     }
 
-    public function getContent(){
+    public function getContent()
+    {
         //getContent() is the part displayed in admin/module/configure
 
         //load jQuery ui js file and css file
@@ -73,9 +74,10 @@ class EventsBar extends Module {
         $this->context->controller->addCSS($this->_path.'jquery-ui.css');
 
         /** sendevent : add new event */
-        if(Tools::isSubmit('sendevent')){
-            if(Tools::isSubmit('events') && Tools::isSubmit('eventtitle')){
-
+        if(Tools::isSubmit('sendevent'))
+        {
+            if(Tools::isSubmit('events') && Tools::isSubmit('eventtitle'))
+            {
                 $events = Tools::getValue('events');
                 $title = Tools::getValue('eventtitle');
                 $startdate = Tools::getValue('startdate');
@@ -89,8 +91,9 @@ class EventsBar extends Module {
                     'enddate' => pSQL($enddate))
                 , 'INSERT');
 
-                if($result != true){
-                    throw new exception("Error this event was not correctly inserted");
+                if($result != true)
+                {
+                    $this->displayError("Error this event was not correctly inserted");
                 }
             }
         }
@@ -98,7 +101,8 @@ class EventsBar extends Module {
 
         //Tools::isSubmit() is better than isset($_POST[])
 
-        if(Tools::isSubmit('deleteevent')){
+        if(Tools::isSubmit('deleteevent'))
+        {
             //handle delete of an event 
                 $todelete = Tools::getValue('deleteevent');
                 if(is_numeric($todelete))
@@ -106,7 +110,9 @@ class EventsBar extends Module {
                     $todelete = pSQL((int)$todelete);
                     $result= Db::getInstance()->executeS('SELECT COUNT(id) as count FROM '._DB_PREFIX_.'eventsbar WHERE id ='.$todelete);
                     $count = $result[0]['count'];
-                    if($count == 1){
+
+                    if($count == 1)
+                    {
                         Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'eventsbar WHERE id='.$todelete);
                     }
                 }
@@ -126,7 +132,8 @@ class EventsBar extends Module {
                             <th>Delete</th>
                     </tr></thead>
                     ';
-        foreach($events as $event){
+        foreach($events as $event)
+        {
             $output .='<tr class="row_hover">';
             $output .= '<td class="pointer center">'.$event['title'].'</td>';
             $output .= '<td class="pointer center">'.$event['event'].'</td>';
@@ -139,7 +146,7 @@ class EventsBar extends Module {
                 </form>
             </td></tr>';
         }
-        //Tools::safeOutput($_SERVER['REQUEST_URI']) contain the actual url with all parametters
+
         $output .= '</table></div>';
         $output.= '
         <div style="width:350px; margin:auto; padding:20px">
